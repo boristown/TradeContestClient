@@ -13,6 +13,7 @@ description = "Trading redefine."
 icon = "src/tradingcontest/resources/tradingcontest"
 sources = ['src/tradingcontest']
 requires = [
+    'requests',
 ]
 
 

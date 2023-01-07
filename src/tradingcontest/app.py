@@ -5,6 +5,9 @@ import toga
 
 from toga.style.pack import CENTER, COLUMN, ROW, Pack, BOTTOM, TOP, LEFT, RIGHT
 #import httpx
+from tradingcontest.binanceAPI import *
+from collections import defaultdict
+import time
 
 user_token = None
 
@@ -200,96 +203,139 @@ class TradingContest(toga.App):
         print("退出登录")
         self.main_window.content = self.login_page()
     
-    def on_market(self, widget):
+    async def on_market(self, widget):
         print("浏览市场")
         self.main_window.content = self.market_page()
+        #异步载入数据
+        await self.load_market_data()
     
+    #实现异步方法load_market_data
+    async def load_market_data(self):
+        #获取数据
+        data = await self.get_market_data()
+        #更新表格
+        self.market_table.data = data
+
+    #实现异步方法get_market_data
+    async def get_market_data(self):
+        #获取数据
+        data1d = get_binance_ticker("1d")
+        time.sleep(0.5)
+        data7d = get_binance_ticker("7d")
+        #print(data1d)
+        #print(data7d)
+        symbolinfo = defaultdict(dict)
+        for d1d in data1d:
+            symbol = d1d["symbol"]
+            symbolinfo[symbol]["price"] = d1d["lastPrice"]
+            symbolinfo[symbol]["Change1d"] = d1d["priceChangePercent"]
+            symbolinfo[symbol]["Volume1d"] = d1d["volume"]
+        for d7d in data7d:
+            symbol = d7d["symbol"]
+            symbolinfo[symbol]["Change7d"] = d7d["priceChangePercent"]
+            symbolinfo[symbol]["Volume7d"] = d7d["volume"]
+        data = []
+        for symbol in symbolinfo:
+            info = symbolinfo[symbol]
+            data.append([symbol,info["price"],info["Change1d"]+'%',info["Change7d"]+'%',info["Volume1d"],info["Volume7d"]])
+        data.sort(key=lambda x:x[4],reverse=True)
+        return data
+
     def on_search(self, widget):
         print("搜索")
 
     def market_page(self):
         self.search_input = FlexInput("输入币种名称")
         self.search_button = FixedButton("搜索",self.on_search,100)
-        header = ['市场', '价格', '日涨跌', '周涨跌']
-        data = [
-            ('BTCUSDT', '10000', '10%', '20%'),
-            ('ETHUSDT', '1000', '10%', '20%'),
-            ('BNBUSDT', '100', '10%', '20%'),
-            ('ADAUSDT', '10', '10%', '20%'),
-            ('DOTUSDT', '1', '10%', '20%'),
-            ('XRPUSDT', '0.1', '10%', '20%'),
-            ('LTCUSDT', '100', '10%', '20%'),
-            ('LINKUSDT', '10', '10%', '20%'),
-            ('BCHUSDT', '100', '10%', '20%'),
-            ('UNIUSDT', '10', '10%', '20%'),
-            ('SOLUSDT', '1', '10%', '20%'),
-            ('DOGEUSDT', '0.1', '10%', '20%'),
-            ('XLMUSDT', '0.1', '10%', '20%'),
-            ('THETAUSDT', '0.1', '10%', '20%'),
-            ('VETUSDT', '0.1', '10%', '20%'),
-            ('ETCUSDT', '10', '10%', '20%'),
-            ('TRXUSDT', '0.1', '10%', '20%'),
-            ('FILUSDT', '10', '10%', '20%'),
-            ('EOSUSDT', '10', '10%', '20%'),
-            ('ATOMUSDT', '10', '10%', '20%'),
-            ('AVAXUSDT', '10', '10%', '20%'),
-            ('ICPUSDT', '10', '10%', '20%'),
-            ('ALGOUSDT', '10', '10%', '20%'),
-            ('MKRUSDT', '10', '10%', '20%'),
-            ('AAVEUSDT', '10', '10%', '20%'),
-            ('COMPUSDT', '10', '10%', '20%'),
-            ('YFIUSDT', '10', '10%', '20%'),
-            ('SNXUSDT', '10', '10%', '20%'),
-            #添加其它更多市场
-            ('ZECUSDT', '10', '10%', '20%'),
-            ('XTZUSDT', '10', '10%', '20%'),
-            ('NEOUSDT', '10', '10%', '20%'),
-            ('DASHUSDT', '10', '10%', '20%'),
-            ('BATUSDT', '10', '10%', '20%'),
-            ('OMGUSDT', '10', '10%', '20%'),
-            ('KSMUSDT', '10', '10%', '20%'),
-            ('ZILUSDT', '10', '10%', '20%'),
-            ('ZRXUSDT', '10', '10%', '20%'),
-            ('EGLDUSDT', '10', '10%', '20%'),
-            ('KNCUSDT', '10', '10%', '20%'),
-            ('BALUSDT', '10', '10%', '20%'),
-            ('OXTUSDT', '10', '10%', '20%'),
-            ('NMRUSDT', '10', '10%', '20%'),
-            ('RUNEUSDT', '10', '10%', '20%'),
-            ('UMAUSDT', '10', '10%', '20%'),
-            ('SUSHIUSDT', '10', '10%', '20%'),
-            ('YFIIUSDT', '10', '10%', '20%'),
-            ('SXPUSDT', '10', '10%', '20%'),
-            ('RENBTCUSDT', '10', '10%', '20%'),
-            ('RENUSDT', '10', '10%', '20%'),
-            ('CRVUSDT', '10', '10%', '20%'),
-            ('SANDUSDT', '10', '10%', '20%'),
-            ('OCEANUSDT', '10', '10%', '20%'),
-            ('BANDUSDT', '10', '10%', '20%'),
-            ('ANKRUSDT', '10', '10%', '20%'),
-            ('SUNUSDT', '10', '10%', '20%'),
-            ('SRMUSDT', '10', '10%', '20%'),
-            ('NUUSDT', '10', '10%', '20%'),
-            ('RSRUSDT', '10', '10%', '20%'),
-            ('TRBUSDT', '10', '10%', '20%'),
-            ('BZRXUSDT', '10', '10%', '20%'),
-            ('WAVESUSDT', '10', '10%', '20%'),
-            ('KAVAUSDT', '10', '10%', '20%'),
-            ('PAXGUSDT', '10', '10%', '20%'),
-            ('DGBUSDT', '10', '10%', '20%'),
-            ('LRCUSDT', '10', '10%', '20%'),
-            ('STORJUSDT', '10', '10%', '20%'),
-            ('ENJUSDT', '10', '10%', '20%'),
-            ('STMXUSDT', '10', '10%', '20%'),
-        ]
-        self.table = toga.Table(header, data=data, style=Pack(padding=10, flex=1, alignment=CENTER))
+        header = ['市场', '价格', '日涨幅', '周涨幅', '日成交量', '周成交量']
+        data = []
+        self.market_table = toga.Table(header, data=data, style=Pack(padding=10, flex=1, alignment=CENTER))
         return LayoutBox(
             [
                 [FlexButton('返回主页',self.on_main_page),FlexButton('开始交易',self.on_trade)],
                 [self.search_input,self.search_button],
-                [self.table]
+                [self.market_table]
             ]
         )
+        # data = [
+        #     ('BTCUSDT', '10000', '10%', '20%'),
+        #     ('ETHUSDT', '1000', '10%', '20%'),
+        #     ('BNBUSDT', '100', '10%', '20%'),
+        #     ('ADAUSDT', '10', '10%', '20%'),
+        #     ('DOTUSDT', '1', '10%', '20%'),
+        #     ('XRPUSDT', '0.1', '10%', '20%'),
+        #     ('LTCUSDT', '100', '10%', '20%'),
+        #     ('LINKUSDT', '10', '10%', '20%'),
+        #     ('BCHUSDT', '100', '10%', '20%'),
+        #     ('UNIUSDT', '10', '10%', '20%'),
+        #     ('SOLUSDT', '1', '10%', '20%'),
+        #     ('DOGEUSDT', '0.1', '10%', '20%'),
+        #     ('XLMUSDT', '0.1', '10%', '20%'),
+        #     ('THETAUSDT', '0.1', '10%', '20%'),
+        #     ('VETUSDT', '0.1', '10%', '20%'),
+        #     ('ETCUSDT', '10', '10%', '20%'),
+        #     ('TRXUSDT', '0.1', '10%', '20%'),
+        #     ('FILUSDT', '10', '10%', '20%'),
+        #     ('EOSUSDT', '10', '10%', '20%'),
+        #     ('ATOMUSDT', '10', '10%', '20%'),
+        #     ('AVAXUSDT', '10', '10%', '20%'),
+        #     ('ICPUSDT', '10', '10%', '20%'),
+        #     ('ALGOUSDT', '10', '10%', '20%'),
+        #     ('MKRUSDT', '10', '10%', '20%'),
+        #     ('AAVEUSDT', '10', '10%', '20%'),
+        #     ('COMPUSDT', '10', '10%', '20%'),
+        #     ('YFIUSDT', '10', '10%', '20%'),
+        #     ('SNXUSDT', '10', '10%', '20%'),
+        #     #添加其它更多市场
+        #     ('ZECUSDT', '10', '10%', '20%'),
+        #     ('XTZUSDT', '10', '10%', '20%'),
+        #     ('NEOUSDT', '10', '10%', '20%'),
+        #     ('DASHUSDT', '10', '10%', '20%'),
+        #     ('BATUSDT', '10', '10%', '20%'),
+        #     ('OMGUSDT', '10', '10%', '20%'),
+        #     ('KSMUSDT', '10', '10%', '20%'),
+        #     ('ZILUSDT', '10', '10%', '20%'),
+        #     ('ZRXUSDT', '10', '10%', '20%'),
+        #     ('EGLDUSDT', '10', '10%', '20%'),
+        #     ('KNCUSDT', '10', '10%', '20%'),
+        #     ('BALUSDT', '10', '10%', '20%'),
+        #     ('OXTUSDT', '10', '10%', '20%'),
+        #     ('NMRUSDT', '10', '10%', '20%'),
+        #     ('RUNEUSDT', '10', '10%', '20%'),
+        #     ('UMAUSDT', '10', '10%', '20%'),
+        #     ('SUSHIUSDT', '10', '10%', '20%'),
+        #     ('YFIIUSDT', '10', '10%', '20%'),
+        #     ('SXPUSDT', '10', '10%', '20%'),
+        #     ('RENBTCUSDT', '10', '10%', '20%'),
+        #     ('RENUSDT', '10', '10%', '20%'),
+        #     ('CRVUSDT', '10', '10%', '20%'),
+        #     ('SANDUSDT', '10', '10%', '20%'),
+        #     ('OCEANUSDT', '10', '10%', '20%'),
+        #     ('BANDUSDT', '10', '10%', '20%'),
+        #     ('ANKRUSDT', '10', '10%', '20%'),
+        #     ('SUNUSDT', '10', '10%', '20%'),
+        #     ('SRMUSDT', '10', '10%', '20%'),
+        #     ('NUUSDT', '10', '10%', '20%'),
+        #     ('RSRUSDT', '10', '10%', '20%'),
+        #     ('TRBUSDT', '10', '10%', '20%'),
+        #     ('BZRXUSDT', '10', '10%', '20%'),
+        #     ('WAVESUSDT', '10', '10%', '20%'),
+        #     ('KAVAUSDT', '10', '10%', '20%'),
+        #     ('PAXGUSDT', '10', '10%', '20%'),
+        #     ('DGBUSDT', '10', '10%', '20%'),
+        #     ('LRCUSDT', '10', '10%', '20%'),
+        #     ('STORJUSDT', '10', '10%', '20%'),
+        #     ('ENJUSDT', '10', '10%', '20%'),
+        #     ('STMXUSDT', '10', '10%', '20%'),
+        # ]
+        # self.market_table = toga.Table(header, data=data, style=Pack(padding=10, flex=1, alignment=CENTER))
+        # return LayoutBox(
+        #     [
+        #         [FlexButton('返回主页',self.on_main_page),FlexButton('开始交易',self.on_trade)],
+        #         [self.search_input,self.search_button],
+        #         [self.market_table]
+        #     ]
+        # )
     
     def on_main_page(self, widget):
         print("返回主页")
@@ -354,5 +400,6 @@ def main():
 D:
 cd BeeWare\tradingcontest
 briefcase dev
+briefcase update android -d
 briefcase run android -u
 '''
