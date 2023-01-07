@@ -132,8 +132,10 @@ def request_binance(url):
     #对url中的?、=、\、&执行转义
     url = escape_url(url)
     #请求代理服务器
+    session = requests.session()
     agent_url = 'http://47.242.55.109:2023/agent/?url=' + url
-    resp = requests.get(agent_url)
+    print(agent_url)
+    resp = session.get(agent_url)
     if resp.status_code != 200:
         return None
     return json.loads(json.loads(resp.text))
@@ -142,7 +144,7 @@ def get_binance_ticker(interval="1d"):
     #获取最近x天的价格变化情况
     top_symbols = json.dumps(get_top_symbols()).replace(" ", "")
     url = 'https://www.binance.com/api/v3/ticker?symbols=' + top_symbols + '&windowSize='+interval
-    print(url)
+    #print(url)
     resp = request_binance(url)
     return resp
 
@@ -153,7 +155,7 @@ def get_all_symbols():
     return resp
 
 def get_top_symbols():
-    return top100_symbols
+    return top100_symbols[:3]
     symbols = get_all_symbols()[:100]
     print(symbols)
     top_symbols = []

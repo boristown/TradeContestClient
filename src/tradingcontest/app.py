@@ -203,25 +203,28 @@ class TradingContest(toga.App):
         print("退出登录")
         self.main_window.content = self.login_page()
     
-    async def on_market(self, widget):
+    def on_market(self, widget):
         print("浏览市场")
         self.main_window.content = self.market_page()
         #异步载入数据
-        await self.load_market_data()
+        #self.load_market_data()
     
     #实现异步方法load_market_data
-    async def load_market_data(self):
+    def load_market_data(self):
         #获取数据
-        data = await self.get_market_data()
+        data = self.get_market_data()
         #更新表格
         self.market_table.data = data
 
+
     #实现异步方法get_market_data
-    async def get_market_data(self):
+    def get_market_data(self):
         #获取数据
         data1d = get_binance_ticker("1d")
+        print(data1d)
         time.sleep(0.5)
         data7d = get_binance_ticker("7d")
+        print(data7d)
         #print(data1d)
         #print(data7d)
         symbolinfo = defaultdict(dict)
@@ -248,7 +251,7 @@ class TradingContest(toga.App):
         self.search_input = FlexInput("输入币种名称")
         self.search_button = FixedButton("搜索",self.on_search,100)
         header = ['市场', '价格', '日涨幅', '周涨幅', '日成交量', '周成交量']
-        data = []
+        data = self.get_market_data()
         self.market_table = toga.Table(header, data=data, style=Pack(padding=10, flex=1, alignment=CENTER))
         return LayoutBox(
             [
