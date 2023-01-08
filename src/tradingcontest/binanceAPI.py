@@ -244,12 +244,13 @@ async def get_binance_ticker(usdt_on,interval="1d"):
     #url = 'api/v3/ticker?symbols=' + top_symbols + '&windowSize='+interval
     #print(url)
     #resp = await request_binance(url)
-    print(interval)
     async with httpx.AsyncClient() as client:
         if usdt_on:
-            response = await client.get(base_url+'ticker_u/'+interval)
+            url = base_url+'ticker_u/'+interval
         else:
-            response = await client.get(base_url+'ticker_b/'+interval)
+            url = base_url+'ticker_b/'+interval
+        print(url)
+        response = await client.get(url)
     print(response.status_code)
     if response.status_code != 200:
         return None

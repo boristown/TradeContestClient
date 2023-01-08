@@ -76,7 +76,7 @@ def LayoutBox(children):
             style=Pack(
                 flex=1,
                 direction=ROW,
-                alignment=CENTER,
+                alignment=LEFT,
                 padding=5
             )) for child in children
         ]
@@ -84,7 +84,7 @@ def LayoutBox(children):
         children=children,
         style=Pack(
             direction=COLUMN,
-            alignment=CENTER,
+            alignment=TOP,
             padding=5,
             flex = 1
             )
@@ -291,7 +291,7 @@ class TradingContest(toga.App):
         self.update_sort_button()
         return self.market_page_static()
     
-    def on_symbol_sort(self):
+    def on_symbol_sort(self, widget):
         if self.sort_field == 'symbol':
             self.sort_desc = not self.sort_desc
         else:
@@ -299,7 +299,7 @@ class TradingContest(toga.App):
             self.sort_desc = False
         self.on_sort()
 
-    def on_price_sort(self):
+    def on_price_sort(self, widget):
         if self.sort_field == 'price':
             self.sort_desc = not self.sort_desc
         else:
@@ -307,7 +307,7 @@ class TradingContest(toga.App):
             self.sort_desc = False
         self.on_sort()
 
-    def on_volume_sort(self):
+    def on_volume_sort(self, widget):
         if self.sort_field == 'volume':
             self.sort_desc = not self.sort_desc
         else:
@@ -315,7 +315,7 @@ class TradingContest(toga.App):
             self.sort_desc = False
         self.on_sort()
 
-    def on_change_sort(self):
+    def on_change_sort(self, widget):
         if self.sort_field == 'change':
             self.sort_desc = not self.sort_desc
         else:
@@ -352,8 +352,9 @@ class TradingContest(toga.App):
             idx = 3
         self.realtabledata[self.symbol_base] = sorted(self.realtabledata[self.symbol_base],key=lambda x:x[idx],reverse=self.sort_desc)
         self.market_table.data = self.realtabledata[self.symbol_base]
+        self.update_sort_button()
 
-    async def on_usdt_toggle(self):
+    async def on_usdt_toggle(self, widget):
         if self.usdt_on: return
         self.usdt_on = True
         self.usdt_toggle.enabled = False
@@ -362,7 +363,7 @@ class TradingContest(toga.App):
         self.market_table.data = self.realtabledata[self.symbol_base]
         await self.refresh_table(None)
 
-    async def on_btc_toggle(self):
+    async def on_btc_toggle(self, widget):
         if not self.usdt_on: return
         self.usdt_on = False
         self.usdt_toggle.enabled = True
@@ -374,7 +375,7 @@ class TradingContest(toga.App):
     def market_page_static(self):
         return LayoutBox(
             [
-                [self.back_main_page_button,self.start_trade_button],
+                [self.refresh_button,self.start_trade_button,self.back_main_page_button],
                 # [self.refresh_button,FlexButton('默认排序',self.on_sort_by_default)],
                 # [FlexButton('按日涨幅升序',self.on_sort_by_change1d),FlexButton('按日涨幅降序',self.on_sort_by_change1d_desc)],
                 # [FlexButton('按周涨幅升序',self.on_sort_by_change7d),FlexButton('按周涨幅降序',self.on_sort_by_change7d_desc)],
@@ -421,7 +422,7 @@ class TradingContest(toga.App):
         self.refresh_button.text = "刷新中..."
         #self.loading_market = True
         self.tabledata[self.symbol_base] = await self.get_market_data()
-        self.realtabledata[self.symbol_base] = self.tabledata[:]
+        self.realtabledata[self.symbol_base] = self.tabledata[self.symbol_base][:]
         self.market_table.data = self.realtabledata[self.symbol_base]
         self.refresh_button.text = "刷新"
         self.refresh_button.enabled = True
