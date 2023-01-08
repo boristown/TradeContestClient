@@ -275,6 +275,19 @@ class TradingContest(toga.App):
         self.realtabledata = self.tabledata[:]
         self.market_table = toga.Table(header, data=self.realtabledata, style=Pack(padding=10, flex=1, alignment=CENTER))
         self.refresh_button = FlexButton('刷新',self.refresh_table)
+        return self.market_page_static()
+        # return LayoutBox(
+        #     [
+        #         [FlexButton('返回主页',self.on_main_page),FlexButton('开始交易',self.on_trade)],
+        #         [self.refresh_button,FlexButton('默认排序',self.on_sort_by_default)],
+        #         [FlexButton('按日涨幅升序',self.on_sort_by_change1d),FlexButton('按日涨幅降序',self.on_sort_by_change1d_desc)],
+        #         [FlexButton('按周涨幅升序',self.on_sort_by_change7d),FlexButton('按周涨幅降序',self.on_sort_by_change7d_desc)],
+        #         [self.search_input],
+        #         [self.market_table]
+        #     ]
+        # )
+    
+    def market_page_static(self):
         return LayoutBox(
             [
                 [FlexButton('返回主页',self.on_main_page),FlexButton('开始交易',self.on_trade)],
@@ -292,42 +305,47 @@ class TradingContest(toga.App):
         self.realtabledata = self.tabledata[:]
         self.market_table.data = self.realtabledata
         print(self.realtabledata)
+        #self.main_window.content = self.market_page_static()
         #self.on_search(widget)
         #self.market_table.refresh()
     
     def on_sort_by_change7d(self, widget):
         print("按周涨幅升序")
-        self.realtabledata = self.tabledata[:]
-        self.realtabledata.sort(key=lambda x:x[3])
+        self.realtabledata = sorted(self.tabledata[:],key=lambda x:x[3])
+        #self.realtabledata.sort(key=lambda x:x[3])
         self.market_table.data = self.realtabledata
         print(self.realtabledata)
+        #self.main_window.content = self.market_page_static()
         #self.on_search(widget)
         #self.market_table.refresh()
     
     def on_sort_by_change1d(self, widget):
         print("按日涨幅升序")
-        self.realtabledata = self.tabledata[:]
-        self.realtabledata.sort(key=lambda x:x[2])
+        self.realtabledata = sorted(self.tabledata[:],key=lambda x:x[2])
+        #self.realtabledata.sort(key=lambda x:x[2])
         self.market_table.data = self.realtabledata
         print(self.realtabledata)
+        #self.main_window.content = self.market_page_static()
         #self.on_search(widget)
         #self.market_table.refresh()
     
     def on_sort_by_change7d_desc(self, widget):
         print("按周涨幅降序")
-        self.realtabledata = self.tabledata[:]
-        self.realtabledata.sort(key=lambda x:x[3],reverse=True)
+        self.realtabledata = sorted(self.tabledata[:],key=lambda x:x[3],reverse=True)
+        #self.realtabledata.sort(key=lambda x:x[3],reverse=True)
         self.market_table.data = self.realtabledata
         print(self.realtabledata)
+        #self.main_window.content = self.market_page_static()
         #self.on_search(widget)
         #self.market_table.refresh()
 
     def on_sort_by_change1d_desc(self, widget):
         print("按日涨幅降序")
-        self.realtabledata = self.tabledata[:]
-        self.realtabledata.sort(key=lambda x:x[2],reverse=True)
+        self.realtabledata = sorted(self.tabledata[:],key=lambda x:x[2],reverse=True)
+        #self.realtabledata.sort(key=lambda x:x[2],reverse=True)
         self.market_table.data = self.realtabledata
         print(self.realtabledata)
+        #self.main_window.content = self.market_page_static()
         #self.on_search(widget)
         #self.market_table.refresh()
     
@@ -341,6 +359,7 @@ class TradingContest(toga.App):
         self.refresh_button.text = "刷新"
         self.refresh_button.enabled = True
         self.loading_market = False
+        self.main_window.content = self.market_page_static()
     
     def on_main_page(self, widget):
         self.loading_market = False
@@ -363,7 +382,13 @@ class TradingContest(toga.App):
         self.main_window.content = self.trade_page()
     
     def trade_page(self):
-        pass
+        return LayoutBox(
+            [
+                [FlexButton('查看我的订单',self.on_order),FlexButton('查看我的持仓',self.on_position)],
+                #返回主页
+                [FlexButton('返回主页',self.on_main_page)]
+            ]
+        )
 
     def on_order(self, widget):
         print("查看我的订单")
