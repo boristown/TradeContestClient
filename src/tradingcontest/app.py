@@ -250,6 +250,7 @@ class TradingContest(toga.App):
             symbolinfo[symbol]["Change7d"] = d7d["priceChangePercent"]
             symbolinfo[symbol]["Volume7d"] = d7d["quoteVolume"]
         data = []
+        top100_symbols = await get_top_symbols()
         for symbol in top100_symbols:
             info = symbolinfo[symbol]
             data.append([symbol,info["price"],float(info["Change1d"]),float(info["Change7d"]),info["Volume1d"],info["Volume7d"]])

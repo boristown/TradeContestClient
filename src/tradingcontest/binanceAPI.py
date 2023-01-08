@@ -21,109 +21,9 @@ import requests
 import json
 import httpx
 import base64
+from functools import *
 
-top100_symbols = [
-"BTCUSDT",
-"BTCBUSD",
-"BUSDUSDT",
-"ETHUSDT",
-"ETHBUSD",
-"XRPUSDT",
-"ETHBTC",
-"GALAUSDT",
-"TRXUSDT",
-"BNBBUSD",
-"SOLUSDT",
-"DOGEUSDT",
-"BNBUSDT",
-"ETCUSDT",
-"LTCUSDT",
-"GALABUSD",
-"SOLBUSD",
-"USDTTRY",
-"MATICUSDT",
-"ADAUSDT",
-"SANDUSDT",
-"XRPBUSD",
-"OPUSDT",
-"SHIBUSDT",
-"LDOUSDT",
-"LUNCBUSD",
-"APTUSDT",
-"DOGEBUSD",
-"BTCEUR",
-"NEARUSDT",
-"FETUSDT",
-"GALATRY",
-"TRXBUSD",
-"LTCBUSD",
-"LINKUSDT",
-"ATOMUSDT",
-"BUSDTRY",
-"FTMUSDT",
-"LDOBUSD",
-"ETCBUSD",
-"ADABUSD",
-"JASMYUSDT",
-"FETBUSD",
-"ETHEUR",
-"SHIBBUSD",
-"MATICBUSD",
-"AVAXUSDT",
-"DOTUSDT",
-"APTBUSD",
-"XMRUSDT",
-"MASKUSDT",
-"BTCTRY",
-"BTCAUD",
-"FILUSDT",
-"BTCGBP",
-"OPBUSD",
-"LUNCUSDT",
-"AGIXBUSD",
-"APEUSDT",
-"USDTBRL",
-"MANAUSDT",
-"AXSUSDT",
-"SUSHIUSDT",
-"JASMYBUSD",
-"OCEANUSDT",
-"DYDXUSDT",
-"TWTUSDT",
-"CHZUSDT",
-"NEARBUSD",
-"BNXUSDT",
-"HOOKUSDT",
-"CTXCUSDT",
-"JASMYTRY",
-"FIDABUSD",
-"BNBBTC",
-"SANDBUSD",
-"ALGOUSDT",
-"LINKBUSD",
-"GMTUSDT",
-"BCHUSDT",
-"SOLBTC",
-"VIDTBUSD",
-"BTCBRL",
-"VIDTUSDT",
-"HOOKBUSD",
-"RLCUSDT",
-"AVAXBUSD",
-"SOLTRY",
-"LTCBTC",
-"FIDAUSDT",
-"SRMBUSD",
-"USDTBIDR",
-"UNIUSDT",
-"WBTCBTC",
-"DASHUSDT",
-"AUDIOUSDT",
-"TWTBUSD",
-"OCEANBUSD",
-"APEBUSD",
-"ICPUSDT"
-]
+base_url = "http://47.242.55.109:2023/"
 
 def escape_url(url):
     #对url中的?、=、\、&执行转义
@@ -137,22 +37,28 @@ async def request_binance(url):
     url = base64.b64encode(url.encode('utf-8')).decode('utf-8')
     #请求代理服务器
     #session = requests.session()
-    agent_url = 'http://47.242.55.109:2023/B?x=' + url
+    agent_url = base_url + 'B?x=' + url
     print(agent_url)
     async with httpx.AsyncClient() as client:
         response = await client.get(agent_url)
-    #print(response.status_code, response.text, response.headers, response.content)
+    print(response.status_code, response.text, response.headers, response.content)
     if response.status_code != 200:
         return None
     return json.loads(json.loads(response.text))
 
 async def get_binance_ticker(interval="1d"):
     #获取最近x天的价格变化情况
-    top_symbols = json.dumps(get_top_symbols()).replace(" ", "")
-    url = 'api/v3/ticker?symbols=' + top_symbols + '&windowSize='+interval
+    #top100_symbols = await get_top_symbols()
+    #top_symbols = json.dumps(top100_symbols).replace(" ", "")
+    #url = 'api/v3/ticker?symbols=' + top_symbols + '&windowSize='+interval
     #print(url)
-    resp = await request_binance(url)
-    return resp
+    #resp = await request_binance(url)
+    async with httpx.AsyncClient() as client:
+        response = await client.get(base_url+'ticker/'+interval)
+    #print(response.status_code, response.text, response.headers, response.content)
+    if response.status_code != 200:
+        return None
+    return json.loads(response.text)
 
 def get_all_symbols():
     #/fapi/v1/ticker/price
@@ -160,13 +66,11 @@ def get_all_symbols():
     resp = request_binance(url)
     return resp
 
-def get_top_symbols():
-    return top100_symbols[:100]
-    symbols = get_all_symbols()[:100]
-    print(symbols)
-    top_symbols = []
-    for symbol in symbols:
-        print(symbol)
-        top_symbols.append(symbol['symbol'])
-    #top_symbols = [symbol['symbol'] for symbol in symbols]
-    return top_symbols
+@cache
+async def get_top_symbols():
+    async with httpx.AsyncClient() as client:
+        response = await client.get(base_url+'symbols')
+    #print(response.status_code, response.text, response.headers, response.content)
+    if response.status_code != 200:
+        return None
+    return json.loads(response.text)
