@@ -19,6 +19,8 @@
 
 import requests
 import json
+import httpx
+import base64
 
 top100_symbols = [
 "BTCUSDT",
@@ -128,34 +130,38 @@ def escape_url(url):
     url = url.replace('?', '%3F').replace('=', '%3D').replace('/', '%2F').replace('&', '%26')
     return url
 
-def request_binance(url):
+async def request_binance(url):
     #对url中的?、=、\、&执行转义
-    url = escape_url(url)
+    #url = escape_url(url)
+    #将url转为base64编码
+    url = base64.b64encode(url.encode('utf-8')).decode('utf-8')
     #请求代理服务器
-    session = requests.session()
-    agent_url = 'http://47.242.55.109:2023/agent/?url=' + url
+    #session = requests.session()
+    agent_url = 'http://47.242.55.109:2023/B?x=' + url
     print(agent_url)
-    resp = session.get(agent_url)
-    if resp.status_code != 200:
+    async with httpx.AsyncClient() as client:
+        response = await client.get(agent_url)
+    #print(response.status_code, response.text, response.headers, response.content)
+    if response.status_code != 200:
         return None
-    return json.loads(json.loads(resp.text))
+    return json.loads(json.loads(response.text))
 
-def get_binance_ticker(interval="1d"):
+async def get_binance_ticker(interval="1d"):
     #获取最近x天的价格变化情况
     top_symbols = json.dumps(get_top_symbols()).replace(" ", "")
-    url = 'https://www.binance.com/api/v3/ticker?symbols=' + top_symbols + '&windowSize='+interval
+    url = 'api/v3/ticker?symbols=' + top_symbols + '&windowSize='+interval
     #print(url)
-    resp = request_binance(url)
+    resp = await request_binance(url)
     return resp
 
 def get_all_symbols():
     #/fapi/v1/ticker/price
-    url = 'https://fapi.binance.com/fapi/v1/ticker/price'
+    url = 'fapi/v1/ticker/price'
     resp = request_binance(url)
     return resp
 
 def get_top_symbols():
-    return top100_symbols[:3]
+    return top100_symbols[:100]
     symbols = get_all_symbols()[:100]
     print(symbols)
     top_symbols = []
