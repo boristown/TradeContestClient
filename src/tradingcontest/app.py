@@ -38,6 +38,7 @@ def ColumnBox(children):
 def BlackLabel(text):
     return toga.Label(
         text,
+        #style=Pack(padding=(0, 5),color="black",alignment=CENTER,flex=1)
         style=Pack(padding=(0, 5),color="black",alignment=CENTER)
     )
 
@@ -206,18 +207,20 @@ class TradingContest(toga.App):
         self.main_window.content = self.login_page()
     
     async def on_market(self, widget):
-        #启动一个线程，在线程中执行方法：self.show_market_page()
-        #threading.Thread(target=self.show_market_page).start()
+        self.loading_market = True
+        self.main_window.content = LayoutBox([
+            [BlackLabel("载入中……")],
+            [FlexButton('返回主页',self.on_main_page)]
+            ])
         self.view_markets.text = "浏览市场(载入中……)"
-        #self.view_markets.refresh()
-        #self.main_window.content.refresh()
         await self.show_market_page()
-        #self.view_markets.text = "浏览市场"
-        #self.main_window.content.refresh()
+        self.view_markets.text = "浏览市场"
     
     async def show_market_page(self):
-        self.main_window.content = await self.market_page()
-        self.main_window.content.refresh()
+        content = await self.market_page()
+        if self.loading_market:
+            self.main_window.content = content
+            self.main_window.content.refresh()
 
     #实现异步方法load_market_data
     def load_market_data(self):
@@ -229,13 +232,15 @@ class TradingContest(toga.App):
 
     #实现异步方法get_market_data
     async def get_market_data(self):
-        await asyncio.sleep(0.1)
         #获取数据
+        if not self.loading_market: return
         data1d = await get_binance_ticker("1d")
         #print(data1d)
-        await asyncio.sleep(0.3)
+        if not self.loading_market: return
+        await asyncio.sleep(0.8)
+        if not self.loading_market: return
         data7d = await get_binance_ticker("7d")
-        await asyncio.sleep(0.1)
+        if not self.loading_market: return
         #print(data7d)
         #print(data1d)
         #print(data7d)
@@ -250,10 +255,10 @@ class TradingContest(toga.App):
             symbolinfo[symbol]["Change7d"] = d7d["priceChangePercent"]
             symbolinfo[symbol]["Volume7d"] = d7d["quoteVolume"]
         data = []
-        top100_symbols = await get_top_symbols()
+        top100_symbols = get_top_symbols()
         for symbol in top100_symbols:
             info = symbolinfo[symbol]
-            data.append([symbol,info["price"],float(info["Change1d"]),float(info["Change7d"]),info["Volume1d"],info["Volume7d"]])
+            data.append([symbol,float(info["price"]),float(info["Change1d"]),float(info["Change7d"]),info["Volume1d"],info["Volume7d"]])
         #data.sort(key=lambda x:x[2],reverse=True)
         data = [[d[0],d[1],d[2],d[3]] for d in data]
         return data
@@ -277,6 +282,7 @@ class TradingContest(toga.App):
         )
     
     def on_main_page(self, widget):
+        self.loading_market = False
         print("返回主页")
         self.main_window.content = self.main_page()
 
