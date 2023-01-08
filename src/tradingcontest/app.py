@@ -42,8 +42,11 @@ def BlackLabel(text):
         style=Pack(padding=(0, 5),color="black",alignment=CENTER)
     )
 
-def FlexInput(placeholder):
-    return toga.TextInput(placeholder=placeholder,style=Pack(padding=(0, 5), flex=1))
+def FlexInput(placeholder,on_change=None):
+    return toga.TextInput(placeholder=placeholder,
+        style=Pack(padding=(0, 5), flex=1),
+        on_change=on_change
+    )
 
 def FlexButton(text,handler):
     return toga.Button(
@@ -222,14 +225,6 @@ class TradingContest(toga.App):
             self.main_window.content = content
             self.main_window.content.refresh()
 
-    #实现异步方法load_market_data
-    def load_market_data(self):
-        #获取数据
-        data = self.get_market_data()
-        #更新表格
-        self.market_table.data = data
-
-
     #实现异步方法get_market_data
     async def get_market_data(self):
         #获取数据
@@ -265,27 +260,92 @@ class TradingContest(toga.App):
 
     def on_search(self, widget):
         print("搜索")
+        txt = self.search_input.value.upper()
+        self.realtabledata = self.tabledata[:]
+        self.realtabledata = [itm for itm in self.realtabledata if txt in itm[0]]
+        self.market_table.data = self.realtabledata
+        #self.market_table.refresh()
+
 
     async def market_page(self):
-        self.search_input = FlexInput("输入币种名称")
+        self.search_input = FlexInput("输入币种名称执行搜索",self.on_search)
         self.search_button = FixedButton("搜索",self.on_search,100)
-        #header = ['市场', '价格', '日涨幅', '周涨幅', '日成交量', '周成交量']
         header = ['市场', '价格', '日涨幅%', '周涨幅%']
-        data = await self.get_market_data()
-        self.market_table = toga.Table(header, data=data, style=Pack(padding=10, flex=1, alignment=CENTER))
+        self.tabledata = await self.get_market_data()
+        self.realtabledata = self.tabledata[:]
+        self.market_table = toga.Table(header, data=self.realtabledata, style=Pack(padding=10, flex=1, alignment=CENTER))
+        self.refresh_button = FlexButton('刷新',self.refresh_table)
         return LayoutBox(
             [
                 [FlexButton('返回主页',self.on_main_page),FlexButton('开始交易',self.on_trade)],
-                [self.search_input,self.search_button],
+                [self.refresh_button,FlexButton('默认排序',self.on_sort_by_default)],
+                [FlexButton('按日涨幅升序',self.on_sort_by_change1d),FlexButton('按日涨幅降序',self.on_sort_by_change1d_desc)],
+                [FlexButton('按周涨幅升序',self.on_sort_by_change7d),FlexButton('按周涨幅降序',self.on_sort_by_change7d_desc)],
+                [self.search_input],
                 [self.market_table]
             ]
         )
+    
+    def on_sort_by_default(self, widget):
+        print("默认排序")
+        #self.tabledata.sort(key=lambda x:x[0])
+        self.realtabledata = self.tabledata[:]
+        self.market_table.data = self.realtabledata
+        print(self.realtabledata)
+        #self.on_search(widget)
+        #self.market_table.refresh()
+    
+    def on_sort_by_change7d(self, widget):
+        print("按周涨幅升序")
+        self.realtabledata = self.tabledata[:]
+        self.realtabledata.sort(key=lambda x:x[3])
+        self.market_table.data = self.realtabledata
+        print(self.realtabledata)
+        #self.on_search(widget)
+        #self.market_table.refresh()
+    
+    def on_sort_by_change1d(self, widget):
+        print("按日涨幅升序")
+        self.realtabledata = self.tabledata[:]
+        self.realtabledata.sort(key=lambda x:x[2])
+        self.market_table.data = self.realtabledata
+        print(self.realtabledata)
+        #self.on_search(widget)
+        #self.market_table.refresh()
+    
+    def on_sort_by_change7d_desc(self, widget):
+        print("按周涨幅降序")
+        self.realtabledata = self.tabledata[:]
+        self.realtabledata.sort(key=lambda x:x[3],reverse=True)
+        self.market_table.data = self.realtabledata
+        print(self.realtabledata)
+        #self.on_search(widget)
+        #self.market_table.refresh()
+
+    def on_sort_by_change1d_desc(self, widget):
+        print("按日涨幅降序")
+        self.realtabledata = self.tabledata[:]
+        self.realtabledata.sort(key=lambda x:x[2],reverse=True)
+        self.market_table.data = self.realtabledata
+        print(self.realtabledata)
+        #self.on_search(widget)
+        #self.market_table.refresh()
+    
+    async def refresh_table(self, widget):
+        print("刷新")
+        self.refresh_button.enabled = False
+        self.refresh_button.text = "刷新中..."
+        self.loading_market = True
+        self.tabledata = await self.get_market_data()
+        self.market_table.data = self.tabledata[:]
+        self.refresh_button.text = "刷新"
+        self.refresh_button.enabled = True
+        self.loading_market = False
     
     def on_main_page(self, widget):
         self.loading_market = False
         print("返回主页")
         self.main_window.content = self.main_page()
-
     
     def on_trade_log(self, widget):
         print("查看交易日志")
@@ -318,25 +378,6 @@ class TradingContest(toga.App):
     
     def position_page(self):
         pass
-
-
-    async def say_hello(self, widget):
-        pass
-        # if self.name_input.value:
-        #     name = self.name_input.value
-        # else:
-        #     name = 'stranger'
-
-        # async with httpx.AsyncClient() as client:
-        #     response = await client.get("https://jsonplaceholder.typicode.com/posts/42")
-
-        # payload = response.json()
-
-        # self.main_window.info_dialog(
-        #     "Hello, {}".format(name),
-        #     payload["body"],
-        # )
-
 
 def main():
     return TradingContest("模拟交易竞赛")
