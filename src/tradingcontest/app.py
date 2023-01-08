@@ -121,7 +121,7 @@ class TradingContest(toga.App):
         #水平拉伸元素，垂直居中元素
         
         #手机号Label
-        self.phone_label = BlackLabel('【手机号】')
+        self.phone_label = BlackLabel('手机号：')
         #国家区号选择下拉框
         self.country_code = toga.Selection(
             items=['中国+86', '美国+1', '英国+44', '日本+81', '韩国+82', '法国+33', '德国+49', '意大利+39', '西班牙+34', '俄罗斯+7', '加拿大+1', '澳大利亚+61', '新西兰+64', '印度+91', '巴西+55', '阿根廷+54', '墨西哥+52', '南非+27', '马来西亚+60', '泰国+66', '菲律宾+63', '印尼+62', '越南+84', '新加坡+65', '马尔代夫+960', '伊朗+98', '土耳其+90', '以色列+972', '阿联酋+971', '沙特阿拉伯+966', '卡塔尔+974', '科威特+965', '巴林+973', '阿曼+968', '约旦+962', '黎巴嫩+961', '伊拉克+964', '叙利亚+963', '巴勒斯坦+970', '也门+967', '科特迪瓦+225', '尼日利亚+234', '埃及+20', '南苏丹+211', '利比亚+218', '苏丹+249', '摩洛哥+212', '阿尔及利亚+213', '突尼斯+216', '埃塞俄比亚+251', '肯尼亚+254', '乌干达+256', '坦桑尼亚+255', '塞舌尔+248', '毛里求斯+230', '马达加斯加+261', '留尼汪+262', '津巴布韦+263', '莫桑比克+258'],
@@ -133,7 +133,7 @@ class TradingContest(toga.App):
         self.phone_input = FlexNumber()
 
         #验证码Label
-        self.valnum_label = BlackLabel('【验证码】')
+        self.valnum_label = BlackLabel('验证码：')
 
         #验证码输入框
         self.valnum_input = FlexNumber()
@@ -263,7 +263,7 @@ class TradingContest(toga.App):
         txt = self.search_input.value.upper()
         #self.realtabledata[self.symbol_base] = self.tabledata[self.symbol_base][:]
         self.realtabledata[self.symbol_base] = [itm for itm in self.tabledata[self.symbol_base] if txt in itm[0]]
-        self.market_table.data = self.realtabledata[self.symbol_base]
+        self.market_table.data = self.strmap(self.realtabledata[self.symbol_base])
         self.on_sort(widget)
 
     async def market_page(self):
@@ -326,6 +326,7 @@ class TradingContest(toga.App):
         self.on_sort()
     
     def update_sort_button(self):
+        print("更新排序按钮")
         self.symbol_sort_button.label = '市场'
         self.price_sort_button.label = '价格'
         self.volume_sort_button.label = '交易额'
@@ -341,6 +342,7 @@ class TradingContest(toga.App):
             self.change_sort_button.label += suffix
 
     def on_sort(self):
+        print("排序")
         idx = 0
         if self.sort_field == 'symbol':
             idx = 0
@@ -351,7 +353,7 @@ class TradingContest(toga.App):
         elif self.sort_field == 'change':
             idx = 3
         self.realtabledata[self.symbol_base] = sorted(self.realtabledata[self.symbol_base],key=lambda x:x[idx],reverse=self.sort_desc)
-        self.market_table.data = self.realtabledata[self.symbol_base]
+        self.market_table.data = self.strmap(self.realtabledata[self.symbol_base])
         self.update_sort_button()
 
     async def on_usdt_toggle(self, widget):
@@ -360,7 +362,7 @@ class TradingContest(toga.App):
         self.usdt_toggle.enabled = False
         self.btc_toggle.enabled = True
         self.symbol_base = 'USDT'
-        self.market_table.data = self.realtabledata[self.symbol_base]
+        self.market_table.data = self.strmap(self.realtabledata[self.symbol_base])
         await self.refresh_table(None)
 
     async def on_btc_toggle(self, widget):
@@ -369,7 +371,7 @@ class TradingContest(toga.App):
         self.usdt_toggle.enabled = True
         self.btc_toggle.enabled = False
         self.symbol_base = 'BTC'
-        self.market_table.data = self.realtabledata[self.symbol_base]
+        self.market_table.data = self.strmap(self.realtabledata[self.symbol_base])
         await self.refresh_table(None)
 
     def market_page_static(self):
@@ -416,6 +418,9 @@ class TradingContest(toga.App):
     #     self.market_table.data = self.realtabledata
     #     print(self.realtabledata)
     
+    def strmap(self, data):
+        return [[str(x) for x in row] for row in data]
+
     async def refresh_table(self, widget):
         print("刷新")
         self.refresh_button.enabled = False
@@ -423,7 +428,7 @@ class TradingContest(toga.App):
         #self.loading_market = True
         self.tabledata[self.symbol_base] = await self.get_market_data()
         self.realtabledata[self.symbol_base] = self.tabledata[self.symbol_base][:]
-        self.market_table.data = self.realtabledata[self.symbol_base]
+        self.market_table.data = self.strmap(self.realtabledata[self.symbol_base])
         self.refresh_button.text = "刷新"
         self.refresh_button.enabled = True
         #self.loading_market = False
