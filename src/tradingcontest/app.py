@@ -12,6 +12,8 @@ import threading
 import asyncio
 
 user_token = None
+up_triangle = '▲'
+down_triangle = '▼'
 
 def HCenterElem(element):
     return toga.Box(
@@ -152,7 +154,6 @@ class TradingContest(toga.App):
                 [self.login_button]
             ]
         )
-
         return login_box
     
     def on_select(self, widget):
@@ -229,31 +230,27 @@ class TradingContest(toga.App):
     async def get_market_data(self):
         #获取数据
         if not self.loading_market: return
-        data1d = await get_binance_ticker("1d")
-        #print(data1d)
+        data1d = await get_binance_ticker(self.usdt_on,"1d")
         if not self.loading_market: return
-        await asyncio.sleep(0.8)
-        if not self.loading_market: return
-        data7d = await get_binance_ticker("7d")
-        if not self.loading_market: return
-        #print(data7d)
-        #print(data1d)
-        #print(data7d)
+        #await asyncio.sleep(0.8)
+        #if not self.loading_market: return
+        #data7d = await get_binance_ticker("7d")
+        #if not self.loading_market: return
         symbolinfo = defaultdict(dict)
         for d1d in data1d:
             symbol = d1d["symbol"]
             symbolinfo[symbol]["price"] = d1d["lastPrice"]
             symbolinfo[symbol]["Change1d"] = d1d["priceChangePercent"]
             symbolinfo[symbol]["Volume1d"] = d1d["quoteVolume"]
-        for d7d in data7d:
-            symbol = d7d["symbol"]
-            symbolinfo[symbol]["Change7d"] = d7d["priceChangePercent"]
-            symbolinfo[symbol]["Volume7d"] = d7d["quoteVolume"]
+        # for d7d in data7d:
+        #     symbol = d7d["symbol"]
+        #     symbolinfo[symbol]["Change7d"] = d7d["priceChangePercent"]
+        #     symbolinfo[symbol]["Volume7d"] = d7d["quoteVolume"]
         data = []
-        top100_symbols = get_top_symbols()
-        for symbol in top100_symbols:
+        #top100_symbols = get_SYM_USDT() if self.usdt_on else get_SYM_BTC()
+        for symbol in symbolinfo:
             info = symbolinfo[symbol]
-            data.append([symbol,float(info["price"]),float(info["Change1d"]),float(info["Change7d"]),info["Volume1d"],info["Volume7d"]])
+            data.append([symbol,float(info["price"]),info["Volume1d"],float(info["Change1d"])])
         #data.sort(key=lambda x:x[2],reverse=True)
         data = [[d[0],d[1],d[2],d[3]] for d in data]
         return data
@@ -264,90 +261,78 @@ class TradingContest(toga.App):
         self.realtabledata = self.tabledata[:]
         self.realtabledata = [itm for itm in self.realtabledata if txt in itm[0]]
         self.market_table.data = self.realtabledata
-        #self.market_table.refresh()
-
 
     async def market_page(self):
         self.search_input = FlexInput("输入币种名称执行搜索",self.on_search)
         self.search_button = FixedButton("搜索",self.on_search,100)
-        header = ['市场', '价格', '日涨幅%', '周涨幅%']
+        header = ['市场', '价格', '交易额', '日涨幅%']
         self.tabledata = await self.get_market_data()
         self.realtabledata = self.tabledata[:]
+        self.usdt_on = True
+        self.usdt_toggle = FlexButton('USDT',self.on_usdt_toggle)
+        self.btc_toggle = FlexButton('BTC',self.on_btc_toggle)
+        self.usdt_toggle.enabled = False
+        self.back_main_page_button = FlexButton('返回主页',self.on_main_page)
+        self.start_trade_button = FlexButton('开始交易',self.on_trade)
         self.market_table = toga.Table(header, data=self.realtabledata, style=Pack(padding=10, flex=1, alignment=CENTER))
         self.refresh_button = FlexButton('刷新',self.refresh_table)
         return self.market_page_static()
-        # return LayoutBox(
-        #     [
-        #         [FlexButton('返回主页',self.on_main_page),FlexButton('开始交易',self.on_trade)],
-        #         [self.refresh_button,FlexButton('默认排序',self.on_sort_by_default)],
-        #         [FlexButton('按日涨幅升序',self.on_sort_by_change1d),FlexButton('按日涨幅降序',self.on_sort_by_change1d_desc)],
-        #         [FlexButton('按周涨幅升序',self.on_sort_by_change7d),FlexButton('按周涨幅降序',self.on_sort_by_change7d_desc)],
-        #         [self.search_input],
-        #         [self.market_table]
-        #     ]
-        # )
     
+    def on_usdt_toggle(self):
+        if self.usdt_on: return
+        self.usdt_on = True
+        self.usdt_toggle.enabled = False
+        self.btc_toggle.enabled = True
+
+    def on_btc_toggle(self):
+        if not self.usdt_on: return
+        self.usdt_on = False
+        self.usdt_toggle.enabled = True
+        self.btc_toggle.enabled = False
+
     def market_page_static(self):
         return LayoutBox(
             [
-                [FlexButton('返回主页',self.on_main_page),FlexButton('开始交易',self.on_trade)],
-                [self.refresh_button,FlexButton('默认排序',self.on_sort_by_default)],
-                [FlexButton('按日涨幅升序',self.on_sort_by_change1d),FlexButton('按日涨幅降序',self.on_sort_by_change1d_desc)],
-                [FlexButton('按周涨幅升序',self.on_sort_by_change7d),FlexButton('按周涨幅降序',self.on_sort_by_change7d_desc)],
+                [self.back_main_page_button,self.start_trade_button],
+                # [self.refresh_button,FlexButton('默认排序',self.on_sort_by_default)],
+                # [FlexButton('按日涨幅升序',self.on_sort_by_change1d),FlexButton('按日涨幅降序',self.on_sort_by_change1d_desc)],
+                # [FlexButton('按周涨幅升序',self.on_sort_by_change7d),FlexButton('按周涨幅降序',self.on_sort_by_change7d_desc)],
+                [self.usdt_toggle,self.btc_toggle],
                 [self.search_input],
+                [self.symbol_sort_button,self.price_sort_button,self.volume_sort_button,self.change_sort_button],
                 [self.market_table]
             ]
         )
     
     def on_sort_by_default(self, widget):
         print("默认排序")
-        #self.tabledata.sort(key=lambda x:x[0])
         self.realtabledata = self.tabledata[:]
         self.market_table.data = self.realtabledata
         print(self.realtabledata)
-        #self.main_window.content = self.market_page_static()
-        #self.on_search(widget)
-        #self.market_table.refresh()
     
     def on_sort_by_change7d(self, widget):
         print("按周涨幅升序")
         self.realtabledata = sorted(self.tabledata[:],key=lambda x:x[3])
-        #self.realtabledata.sort(key=lambda x:x[3])
         self.market_table.data = self.realtabledata
         print(self.realtabledata)
-        #self.main_window.content = self.market_page_static()
-        #self.on_search(widget)
-        #self.market_table.refresh()
     
     def on_sort_by_change1d(self, widget):
         print("按日涨幅升序")
         self.realtabledata = sorted(self.tabledata[:],key=lambda x:x[2])
-        #self.realtabledata.sort(key=lambda x:x[2])
         self.market_table.data = self.realtabledata
         print(self.realtabledata)
-        #self.main_window.content = self.market_page_static()
-        #self.on_search(widget)
-        #self.market_table.refresh()
     
     def on_sort_by_change7d_desc(self, widget):
         print("按周涨幅降序")
         self.realtabledata = sorted(self.tabledata[:],key=lambda x:x[3],reverse=True)
-        #self.realtabledata.sort(key=lambda x:x[3],reverse=True)
         self.market_table.data = self.realtabledata
         print(self.realtabledata)
-        #self.main_window.content = self.market_page_static()
-        #self.on_search(widget)
-        #self.market_table.refresh()
 
     def on_sort_by_change1d_desc(self, widget):
         print("按日涨幅降序")
         self.realtabledata = sorted(self.tabledata[:],key=lambda x:x[2],reverse=True)
-        #self.realtabledata.sort(key=lambda x:x[2],reverse=True)
         self.market_table.data = self.realtabledata
         print(self.realtabledata)
-        #self.main_window.content = self.market_page_static()
-        #self.on_search(widget)
-        #self.market_table.refresh()
     
     async def refresh_table(self, widget):
         print("刷新")
