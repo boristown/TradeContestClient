@@ -58,6 +58,7 @@ async def get_binance_ticker(interval="1d"):
     #print(response.status_code, response.text, response.headers, response.content)
     if response.status_code != 200:
         return None
+    print(response.text)
     return json.loads(response.text)
 
 def get_all_symbols():
@@ -73,4 +74,5 @@ async def get_top_symbols():
     #print(response.status_code, response.text, response.headers, response.content)
     if response.status_code != 200:
         return None
+    print(response.text)
     return json.loads(response.text)
