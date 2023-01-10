@@ -102,14 +102,24 @@ class TradingContest(toga.App):
         """
         global user_token
 
-        if user_token is None:
-            first_page = self.login_page()
-        else:
-            first_page = self.main_page()
+        #if user_token is None:
+        #    first_page = self.login_page()
+        #else:
+        # first_page = self.main_page()
 
         self.main_window = toga.MainWindow(title=self.formal_name)
-        self.main_window.content = first_page
+        # self.main_window.content = first_page
+        # self.main_window.show()
+
+        self.tabledata = defaultdict(list)
+        self.realtabledata = defaultdict(list)
+        
+        content = self.market_page()
+        #if self.loading_market:
+        self.main_window.content = content
         self.main_window.show()
+
+        #self.refresh_table(None)
 
     def login_page(self):
         #用toga创建一个登录页面
@@ -233,7 +243,7 @@ class TradingContest(toga.App):
     async def get_market_data(self):
         #获取数据
         #if not self.loading_market: return
-        data1d = await get_binance_ticker(self.usdt_on,"1d")
+        data1d = await get_binance_ticker(self.usdt_on,self.interval)
         #if not self.loading_market: return
         #await asyncio.sleep(0.8)
         #if not self.loading_market: return
@@ -261,15 +271,15 @@ class TradingContest(toga.App):
     def on_search(self, widget):
         print("搜索")
         txt = self.search_input.value.upper()
-        #self.realtabledata[self.symbol_base] = self.tabledata[self.symbol_base][:]
-        self.realtabledata[self.symbol_base] = [itm for itm in self.tabledata[self.symbol_base] if txt in itm[0]]
-        self.market_table.data = self.strmap(self.realtabledata[self.symbol_base])
+        #self.realtabledata[self.symbol_base+self.interval] = self.tabledata[self.symbol_base+self.interval][:]
+        self.realtabledata[self.symbol_base+self.interval] = [itm for itm in self.tabledata[self.symbol_base+self.interval] if txt in itm[0]]
+        self.market_table.data = self.strmap(self.realtabledata[self.symbol_base+self.interval])
         self.on_sort(widget)
 
-    async def market_page(self):
+    def market_page(self):
         self.search_input = FlexInput("输入币种名称执行搜索",self.on_search)
         self.search_button = FixedButton("搜索",self.on_search,100)
-        header = ['市场', '价格', '交易额', '日涨幅%']
+        header = ['市场', '价格', '交易额', '涨幅%']
         #self.tabledata = await self.get_market_data()
         #self.tabledata = []
         #self.realtabledata = self.tabledata[:]
@@ -277,20 +287,90 @@ class TradingContest(toga.App):
         self.symbol_base = 'USDT'
         self.usdt_toggle = FlexButton('USDT',self.on_usdt_toggle)
         self.btc_toggle = FlexButton('BTC',self.on_btc_toggle)
+        #2小时，6小时，12小时
+        self.interval_2h_toggle = FlexButton('2小时',self.on_interval_2h_toggle)
+        self.interval_6h_toggle = FlexButton('6小时',self.on_interval_6h_toggle)
+        self.interval_12h_toggle = FlexButton('12小时',self.on_interval_12h_toggle)
+        #1天，3天，7天
+        self.interval_1d_toggle = FlexButton('1天',self.on_interval_1d_toggle)
+        self.interval_3d_toggle = FlexButton('3天',self.on_interval_3d_toggle)
+        self.interval_7d_toggle = FlexButton('7天',self.on_interval_7d_toggle)
+        self.interval_1d_toggle.enabled = False
+        self.interval = '1d'
         self.symbol_sort_button = FlexButton('市场',self.on_symbol_sort)
         self.price_sort_button = FlexButton('价格',self.on_price_sort)
         self.volume_sort_button = FlexButton('交易额',self.on_volume_sort)
-        self.change_sort_button = FlexButton('日涨幅%',self.on_change_sort)
+        self.change_sort_button = FlexButton('涨幅%',self.on_change_sort)
         self.sort_field = 'volume'
         self.sort_desc = False
         self.usdt_toggle.enabled = False
         self.back_main_page_button = FlexButton('返回主页',self.on_main_page)
         self.start_trade_button = FlexButton('开始交易',self.on_trade)
-        self.market_table = toga.Table(header, data=self.realtabledata[self.symbol_base], style=Pack(padding=10, flex=1, alignment=CENTER))
+        self.market_table = toga.Table(header, data=self.realtabledata[self.symbol_base+self.interval], style=Pack(padding=10, flex=1, alignment=CENTER))
         self.refresh_button = FlexButton('刷新',self.refresh_table)
         self.update_sort_button()
         return self.market_page_static()
     
+    def init_interval_toggle(self):
+        self.interval_2h_toggle.enabled = True
+        self.interval_6h_toggle.enabled = True
+        self.interval_12h_toggle.enabled = True
+        self.interval_1d_toggle.enabled = True
+        self.interval_3d_toggle.enabled = True
+        self.interval_7d_toggle.enabled = True
+
+    async def on_interval_1d_toggle(self, widget):
+        if self.interval == '1d': return
+        self.interval = '1d'
+        self.init_interval_toggle()
+        self.interval_1d_toggle.enabled = False
+        self.market_table.data = self.strmap(self.realtabledata[self.symbol_base+self.interval])
+        await self.refresh_table(widget)
+    
+    async def on_interval_3d_toggle(self, widget):
+        if self.interval == '3d': return
+        self.interval = '3d'
+        self.init_interval_toggle()
+        self.interval_3d_toggle.enabled = False
+        self.market_table.data = self.strmap(self.realtabledata[self.symbol_base+self.interval])
+        await self.refresh_table(widget)
+    
+    #7d
+    async def on_interval_7d_toggle(self, widget):
+        if self.interval == '7d': return
+        self.interval = '7d'
+        self.init_interval_toggle()
+        self.interval_7d_toggle.enabled = False
+        self.market_table.data = self.strmap(self.realtabledata[self.symbol_base+self.interval])
+        await self.refresh_table(widget)
+    
+    #2h
+    async def on_interval_2h_toggle(self, widget):
+        if self.interval == '2h': return
+        self.interval = '2h'
+        self.init_interval_toggle()
+        self.interval_2h_toggle.enabled = False
+        self.market_table.data = self.strmap(self.realtabledata[self.symbol_base+self.interval])
+        await self.refresh_table(widget)
+    
+    #6h
+    async def on_interval_6h_toggle(self, widget):
+        if self.interval == '6h': return
+        self.interval = '6h'
+        self.init_interval_toggle()
+        self.interval_6h_toggle.enabled = False
+        self.market_table.data = self.strmap(self.realtabledata[self.symbol_base+self.interval])
+        await self.refresh_table(widget)
+    
+    #12h
+    async def on_interval_12h_toggle(self, widget):
+        if self.interval == '12h': return
+        self.interval = '12h'
+        self.init_interval_toggle()
+        self.interval_12h_toggle.enabled = False
+        self.market_table.data = self.strmap(self.realtabledata[self.symbol_base+self.interval])
+        await self.refresh_table(widget)
+
     def on_symbol_sort(self, widget):
         if self.sort_field == 'symbol':
             self.sort_desc = not self.sort_desc
@@ -322,7 +402,7 @@ class TradingContest(toga.App):
             self.sort_field = 'change'
             self.sort_desc = False
         self.update_sort_button()
-        self.change_sort_button.label = '日涨幅%' + (down_triangle if self.sort_desc else up_triangle)
+        self.change_sort_button.label = '涨幅%' + (down_triangle if self.sort_desc else up_triangle)
         self.on_sort()
     
     def update_sort_button(self):
@@ -330,7 +410,7 @@ class TradingContest(toga.App):
         self.symbol_sort_button.label = '市场'
         self.price_sort_button.label = '价格'
         self.volume_sort_button.label = '交易额'
-        self.change_sort_button.label = '日涨幅%'
+        self.change_sort_button.label = '涨幅%'
         suffix = down_triangle if self.sort_desc else up_triangle
         if self.sort_field == 'symbol':
             self.symbol_sort_button.label += suffix
@@ -352,8 +432,8 @@ class TradingContest(toga.App):
             idx = 2
         elif self.sort_field == 'change':
             idx = 3
-        self.realtabledata[self.symbol_base] = sorted(self.realtabledata[self.symbol_base],key=lambda x:x[idx],reverse=self.sort_desc)
-        self.market_table.data = self.strmap(self.realtabledata[self.symbol_base])
+        self.realtabledata[self.symbol_base+self.interval] = sorted(self.realtabledata[self.symbol_base+self.interval],key=lambda x:x[idx],reverse=self.sort_desc)
+        self.market_table.data = self.strmap(self.realtabledata[self.symbol_base+self.interval])
         self.update_sort_button()
 
     async def on_usdt_toggle(self, widget):
@@ -362,7 +442,7 @@ class TradingContest(toga.App):
         self.usdt_toggle.enabled = False
         self.btc_toggle.enabled = True
         self.symbol_base = 'USDT'
-        self.market_table.data = self.strmap(self.realtabledata[self.symbol_base])
+        self.market_table.data = self.strmap(self.realtabledata[self.symbol_base+self.interval])
         await self.refresh_table(None)
 
     async def on_btc_toggle(self, widget):
@@ -371,7 +451,7 @@ class TradingContest(toga.App):
         self.usdt_toggle.enabled = True
         self.btc_toggle.enabled = False
         self.symbol_base = 'BTC'
-        self.market_table.data = self.strmap(self.realtabledata[self.symbol_base])
+        self.market_table.data = self.strmap(self.realtabledata[self.symbol_base+self.interval])
         await self.refresh_table(None)
 
     def market_page_static(self):
@@ -379,9 +459,11 @@ class TradingContest(toga.App):
             [
                 [self.refresh_button,self.start_trade_button,self.back_main_page_button],
                 # [self.refresh_button,FlexButton('默认排序',self.on_sort_by_default)],
-                # [FlexButton('按日涨幅升序',self.on_sort_by_change1d),FlexButton('按日涨幅降序',self.on_sort_by_change1d_desc)],
+                # [FlexButton('按涨幅升序',self.on_sort_by_change1d),FlexButton('按涨幅降序',self.on_sort_by_change1d_desc)],
                 # [FlexButton('按周涨幅升序',self.on_sort_by_change7d),FlexButton('按周涨幅降序',self.on_sort_by_change7d_desc)],
                 [self.usdt_toggle,self.btc_toggle],
+                [self.interval_2h_toggle,self.interval_6h_toggle,self.interval_12h_toggle],
+                [self.interval_1d_toggle,self.interval_3d_toggle,self.interval_7d_toggle],
                 [self.search_input],
                 [self.symbol_sort_button,self.price_sort_button,self.volume_sort_button,self.change_sort_button],
                 [self.market_table]
@@ -401,7 +483,7 @@ class TradingContest(toga.App):
     #     print(self.realtabledata)
     
     # def on_sort_by_change1d(self, widget):
-    #     print("按日涨幅升序")
+    #     print("按涨幅升序")
     #     self.realtabledata = sorted(self.tabledata[:],key=lambda x:x[2])
     #     self.market_table.data = self.realtabledata
     #     print(self.realtabledata)
@@ -413,7 +495,7 @@ class TradingContest(toga.App):
     #     print(self.realtabledata)
 
     # def on_sort_by_change1d_desc(self, widget):
-    #     print("按日涨幅降序")
+    #     print("按涨幅降序")
     #     self.realtabledata = sorted(self.tabledata[:],key=lambda x:x[2],reverse=True)
     #     self.market_table.data = self.realtabledata
     #     print(self.realtabledata)
@@ -426,13 +508,14 @@ class TradingContest(toga.App):
         self.refresh_button.enabled = False
         self.refresh_button.text = "刷新中..."
         #self.loading_market = True
-        self.tabledata[self.symbol_base] = await self.get_market_data()
-        self.realtabledata[self.symbol_base] = self.tabledata[self.symbol_base][:]
-        self.market_table.data = self.strmap(self.realtabledata[self.symbol_base])
+        self.tabledata[self.symbol_base+self.interval] = await self.get_market_data()
+        self.realtabledata[self.symbol_base+self.interval] = self.tabledata[self.symbol_base+self.interval][:]
+        self.market_table.data = self.strmap(self.realtabledata[self.symbol_base+self.interval])
         self.refresh_button.text = "刷新"
         self.refresh_button.enabled = True
         #self.loading_market = False
         self.main_window.content = self.market_page_static()
+        self.on_sort()
     
     def on_main_page(self, widget):
         #self.loading_market = False
