@@ -234,7 +234,7 @@ class TradingContest(toga.App):
         await self.refresh_table(widget)
     
     async def show_market_page(self):
-        content = await self.market_page()
+        content = self.market_page()
         #if self.loading_market:
         self.main_window.content = content
         self.main_window.content.refresh()
@@ -306,11 +306,38 @@ class TradingContest(toga.App):
         self.usdt_toggle.enabled = False
         self.back_main_page_button = FlexButton('返回主页',self.on_main_page)
         self.start_trade_button = FlexButton('开始交易',self.on_trade)
-        self.market_table = toga.Table(header, data=self.realtabledata[self.symbol_base+self.interval], style=Pack(padding=10, flex=1, alignment=CENTER))
+        self.market_table = toga.Table(
+            header, 
+            data=self.realtabledata[self.symbol_base+self.interval], 
+            style=Pack(padding=10, flex=1, alignment=CENTER),
+            on_select=self.on_table_select,
+            )
         self.refresh_button = FlexButton('刷新',self.refresh_table)
         self.update_sort_button()
         return self.market_page_static()
     
+    def on_table_select(self, widget, row):
+        self.symbol = row.市场
+        self.price = row.价格
+        self.volume = row.交易额
+        self.change = row.涨幅
+        print('选择了：',self.symbol,self.price,self.volume,self.change)
+        self.start_trade_button.enabled = True
+        self.show_symbol_chart(self.symbol)
+    
+    def show_symbol_chart(self,symbol):
+        print('显示图表：',symbol)
+        #self.main_window.content = self.chart_page()
+        #self.main_window.content = self.chart_page(symbol)
+        self.main_window.content = self.symbol_chart_page(symbol)
+    
+    def symbol_chart_page(self,symbol):
+        return ColumnBox([
+            FlexButton('返回',self.on_market),
+            BlackLabel('---这是'+symbol+'的K线图---'),
+            ]
+        )
+
     def init_interval_toggle(self):
         self.interval_2h_toggle.enabled = True
         self.interval_6h_toggle.enabled = True
