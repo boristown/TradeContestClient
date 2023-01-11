@@ -332,11 +332,21 @@ class TradingContest(toga.App):
         self.main_window.content = self.symbol_chart_page(symbol)
     
     def symbol_chart_page(self,symbol):
+        self.Klinewebview = toga.WebView(
+            on_webview_load=self.on_webview_loaded, style=Pack(flex=1)
+        )
+        #K线图测试url（中国的）
+        self.Klinewebview.url = 'https://gu.qq.com/sh000001/zs'
         return ColumnBox([
-            FlexButton('返回',self.on_market),
+            FlexButton('开始交易',self.on_trade),
             BlackLabel('---这是'+symbol+'的K线图---'),
+            self.Klinewebview,
+            FlexButton('返回',self.on_market),
             ]
         )
+
+    def on_webview_loaded(self, widget):
+        self.url_input.value = self.webview.url
 
     def init_interval_toggle(self):
         self.interval_2h_toggle.enabled = True
