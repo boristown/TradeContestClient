@@ -336,12 +336,13 @@ class TradingContest(toga.App):
             on_webview_load=self.on_webview_loaded, style=Pack(flex=1)
         )
         #K线图测试url（中国的）
-        self.Klinewebview.url = 'https://gu.qq.com/sh000001/zs'
+        #self.Klinewebview.url = 'https://gu.qq.com/sh000001/zs'
+        self.Klinewebview.url = html_test()
         return ColumnBox([
-            FlexButton('开始交易',self.on_trade),
+            FlexButton('模拟交易',self.on_trade),
             BlackLabel('---这是'+symbol+'的K线图---'),
             self.Klinewebview,
-            FlexButton('返回',self.on_market),
+            #FlexButton('返回',self.on_market),
             ]
         )
 
