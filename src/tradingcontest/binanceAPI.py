@@ -31,8 +31,9 @@ def escape_url(url):
     url = url.replace('?', '%3F').replace('=', '%3D').replace('/', '%2F').replace('&', '%26')
     return url
 
-def html_test():
-    return base_url + 'html/BTCUSDT'
+def html_test(symbol):
+    symbol = symbol.upper()
+    return base_url + 'html/' + symbol
     
 async def request_binance(url):
     #对url中的?、=、\、&执行转义

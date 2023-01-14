@@ -69,17 +69,21 @@ def FlexNumber():
         style=Pack(padding_left = 5, flex=1),
     )
 
-def LayoutBox(children):
-    children = [
-        toga.Box(
-            children=child, 
-            style=Pack(
-                flex=1,
-                direction=ROW,
-                alignment=LEFT,
-                padding=5
-            )) for child in children
-        ]
+def LayoutBox(ch):
+    children = []
+    for child in ch:
+        if isinstance(child,list):
+            children.append(
+                toga.Box(
+                children=child, 
+                style=Pack(
+                    flex=1,
+                    direction=ROW,
+                    alignment=LEFT,
+                    padding=5
+                )))
+        else:
+            children.append(child)
     return toga.Box(
         children=children,
         style=Pack(
@@ -333,14 +337,14 @@ class TradingContest(toga.App):
     
     def symbol_chart_page(self,symbol):
         self.Klinewebview = toga.WebView(
-            on_webview_load=self.on_webview_loaded, style=Pack(flex=1)
+            on_webview_load=self.on_webview_loaded, style=Pack(flex=1, padding=10, alignment=CENTER, width=600, height=800),
         )
         #K线图测试url（中国的）
         #self.Klinewebview.url = 'https://gu.qq.com/sh000001/zs'
-        self.Klinewebview.url = html_test()
-        return ColumnBox([
-            FlexButton('模拟交易',self.on_trade),
-            BlackLabel('---这是'+symbol+'的K线图---'),
+        self.Klinewebview.url = html_test(symbol)
+        return LayoutBox([
+            [FlexButton('模拟交易',self.on_trade),FlexButton('市场主页面',self.on_market)],
+            #[BlackLabel('---这是'+symbol+'的K线图---')],
             self.Klinewebview,
             #FlexButton('返回',self.on_market),
             ]
