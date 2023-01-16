@@ -12,93 +12,91 @@ import time
 import threading
 import asyncio
 
-user_token = None
-up_triangle = '▲'
-down_triangle = '▼'
+# user_token = None
+# up_triangle = '▲'
+# down_triangle = '▼'
 
+# #version: yyyymmddx
+# current_version = '202301150'
 
+# def HCenterElem(element):
+#     return toga.Box(
+#         children=[
+#             element
+#         ],
+#         style=Pack(
+#             direction=ROW,
+#             alignment=CENTER,
+#             padding=5
+#         )
+#     )
 
-#version: yyyymmddx
-current_version = '202301150'
+# def ColumnBox(children):
+#     return toga.Box(
+#         children=[HCenterElem(c) for c in children],
+#         style=Pack(
+#             direction=COLUMN,
+#             alignment=CENTER,
+#             padding=10
+#         )
+#     )
 
-def HCenterElem(element):
-    return toga.Box(
-        children=[
-            element
-        ],
-        style=Pack(
-            direction=ROW,
-            alignment=CENTER,
-            padding=5
-        )
-    )
+# def BlackLabel(text):
+#     return toga.Label(
+#         text,
+#         #style=Pack(padding=(0, 5),color="black",alignment=CENTER,flex=1)
+#         style=Pack(padding=(0, 5),color="black",alignment=CENTER)
+#     )
 
-def ColumnBox(children):
-    return toga.Box(
-        children=[HCenterElem(c) for c in children],
-        style=Pack(
-            direction=COLUMN,
-            alignment=CENTER,
-            padding=10
-        )
-    )
+# def FlexInput(placeholder,on_change=None):
+#     return toga.TextInput(placeholder=placeholder,
+#         style=Pack(padding=(0, 5), flex=1),
+#         on_change=on_change
+#     )
 
-def BlackLabel(text):
-    return toga.Label(
-        text,
-        #style=Pack(padding=(0, 5),color="black",alignment=CENTER,flex=1)
-        style=Pack(padding=(0, 5),color="black",alignment=CENTER)
-    )
+# def FlexButton(text,handler):
+#     return toga.Button(
+#         text,
+#         on_press=handler,
+#         style=Pack(padding=(0, 5),flex=1)
+#     )
 
-def FlexInput(placeholder,on_change=None):
-    return toga.TextInput(placeholder=placeholder,
-        style=Pack(padding=(0, 5), flex=1),
-        on_change=on_change
-    )
+# def FixedButton(label, on_press, width):
+#     return toga.Button(
+#         label,
+#         on_press=on_press,
+#         style=Pack(padding=(0, 5),width=width)
+#     )
 
-def FlexButton(text,handler):
-    return toga.Button(
-        text,
-        on_press=handler,
-        style=Pack(padding=(0, 5),flex=1)
-    )
+# def FlexNumber():
+#     return toga.NumberInput(
+#         style=Pack(padding_left = 5, flex=1),
+#     )
 
-def FixedButton(label, on_press, width):
-    return toga.Button(
-        label,
-        on_press=on_press,
-        style=Pack(padding=(0, 5),width=width)
-    )
-
-def FlexNumber():
-    return toga.NumberInput(
-        style=Pack(padding_left = 5, flex=1),
-    )
-
-def LayoutBox(ch):
-    children = []
-    for child in ch:
-        if isinstance(child,list):
-            children.append(
-                toga.Box(
-                children=child, 
-                style=Pack(
-                    flex=1,
-                    direction=ROW,
-                    alignment=LEFT,
-                    padding=5
-                )))
-        else:
-            children.append(child)
-    return toga.Box(
-        children=children,
-        style=Pack(
-            direction=COLUMN,
-            alignment=TOP,
-            padding=5,
-            flex = 1
-            )
-    )
+# def LayoutBox(ch):
+#     children = []
+#     for child in ch:
+#         if isinstance(child,list):
+#             children.append(
+#                 toga.Box(
+#                 children=child, 
+#                 style=Pack(
+#                     flex=1,
+#                     direction=ROW,
+#                     alignment=LEFT,
+#                     padding=5
+#                 )))
+#         else:
+#             children.append(child)
+#     return toga.Box(
+#         children=children,
+#         style=Pack(
+#             direction=COLUMN,
+#             alignment=TOP,
+#             padding=5,
+#             flex = 1
+#             )
+#     )
 
 class TradingContest(toga.App):
 
