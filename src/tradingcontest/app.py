@@ -6,6 +6,7 @@ import toga
 from toga.style.pack import CENTER, COLUMN, ROW, Pack, BOTTOM, TOP, LEFT, RIGHT
 #import httpx
 from tradingcontest.binanceAPI import *
+from tradingcontest.TradingAPI import *
 from collections import defaultdict
 import time
 import threading
@@ -14,6 +15,9 @@ import asyncio
 user_token = None
 up_triangle = '▲'
 down_triangle = '▼'
+
+#version: yyyymmddx
+current_version = '202301150'
 
 def HCenterElem(element):
     return toga.Box(
@@ -545,38 +549,16 @@ class TradingContest(toga.App):
             ]
         )
     
-    # def on_sort_by_default(self, widget):
-    #     print("默认排序")
-    #     self.realtabledata = self.tabledata[:]
-    #     self.market_table.data = self.realtabledata
-    #     print(self.realtabledata)
-    
-    # def on_sort_by_change7d(self, widget):
-    #     print("按周涨幅升序")
-    #     self.realtabledata = sorted(self.tabledata[:],key=lambda x:x[3])
-    #     self.market_table.data = self.realtabledata
-    #     print(self.realtabledata)
-    
-    # def on_sort_by_change1d(self, widget):
-    #     print("按涨幅升序")
-    #     self.realtabledata = sorted(self.tabledata[:],key=lambda x:x[2])
-    #     self.market_table.data = self.realtabledata
-    #     print(self.realtabledata)
-    
-    # def on_sort_by_change7d_desc(self, widget):
-    #     print("按周涨幅降序")
-    #     self.realtabledata = sorted(self.tabledata[:],key=lambda x:x[3],reverse=True)
-    #     self.market_table.data = self.realtabledata
-    #     print(self.realtabledata)
-
-    # def on_sort_by_change1d_desc(self, widget):
-    #     print("按涨幅降序")
-    #     self.realtabledata = sorted(self.tabledata[:],key=lambda x:x[2],reverse=True)
-    #     self.market_table.data = self.realtabledata
-    #     print(self.realtabledata)
-    
     def strmap(self, data):
         return [[str(x) for x in row] for row in data]
+    
+    async def check_last_version(self):
+        print("检查版本")
+        last_version = await get_last_version()
+        if last_version == None: return #获取失败
+        if last_version != current_version:
+            #弹出对话框“发现新版本”，并且显示最新版本号
+            self.main_window.info_dialog(self.formal_name, '发现新版本: ' + last_version + '')
 
     async def refresh_table(self, widget):
         print("刷新")
@@ -591,6 +573,7 @@ class TradingContest(toga.App):
         #self.loading_market = False
         self.main_window.content = self.market_page_static()
         self.on_sort()
+        await self.check_last_version()
     
     def on_main_page(self, widget):
         #self.loading_market = False
