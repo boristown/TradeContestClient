@@ -341,14 +341,47 @@ class TradingContest(toga.App):
         )
         #K线图测试url（中国的）
         #self.Klinewebview.url = 'https://gu.qq.com/sh000001/zs'
-        self.Klinewebview.url = html_test(symbol)
+        self.sel_interval = '3分钟'
+        self.sel_period = '最近1天'
+        self.sel_symbol = symbol
+        self.Klinewebview.url = html_kline(self.sel_symbol,self.sel_interval,self.sel_period)
+        print('K线图url：',self.Klinewebview.url)
+        self.interval_selection = toga.Selection(
+                    items=['3分钟','5分钟','15分钟','30分钟','1小时','2小时','4小时','6小时','12小时','1天','3天'],
+                    on_select=self.on_select_interval,
+                    style=Pack(flex=1),
+                )
+        self.window_selection = toga.Selection(
+                    items=['最近1天','最近3天','最近7天','最近1个月','最近3个月','最近6个月','最近1年'],
+                    on_select=self.on_select_period,
+                    style=Pack(flex=1),
+                )
+        return self.symbol_chart_page_static()
+
+    def symbol_chart_page_static(self):
         return LayoutBox([
             [FlexButton('模拟交易',self.on_trade),FlexButton('市场主页面',self.on_market)],
+            [
+                self.interval_selection,
+                self.window_selection
+            ], #下拉列表
             #[BlackLabel('---这是'+symbol+'的K线图---')],
             self.Klinewebview,
             #FlexButton('返回',self.on_market),
             ]
         )
+    
+    def on_select_interval(self, widget):
+        print(widget.value)
+        self.sel_interval = widget.value
+        self.Klinewebview.url = html_kline(self.sel_symbol,self.sel_interval,self.sel_period)
+        self.main_window.content = self.symbol_chart_page_static()
+        
+
+    def on_select_period(self, widget):
+        self.sel_period = widget.value
+        self.Klinewebview.url = html_kline(self.sel_symbol,self.sel_interval,self.sel_period)
+        self.main_window.content = self.symbol_chart_page_static()
 
     def on_webview_loaded(self, widget):
         self.url_input.value = self.webview.url

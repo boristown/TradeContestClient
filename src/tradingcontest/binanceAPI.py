@@ -22,6 +22,7 @@ import json
 import httpx
 import base64
 from functools import *
+import time
 
 base_url = "http://47.242.55.109:2023/"
 base_url = "https://aitrad.in/"
@@ -31,9 +32,20 @@ def escape_url(url):
     url = url.replace('?', '%3F').replace('=', '%3D').replace('/', '%2F').replace('&', '%26')
     return url
 
-def html_test(symbol):
+def html_kline(symbol, interval, windowSize):
     symbol = symbol.upper()
-    return base_url + 'html/' + symbol
+    interval = interval.replace('分钟', 'm').replace('小时', 'h').replace('天', 'd')
+    base_time = 0
+    if '天' in windowSize:
+        base_time = 86400000
+    elif '月' in windowSize:
+        base_time = 2592000000
+    elif '年' in windowSize:
+        base_time = 31536000000
+    windowSize = int(windowSize.replace('天', '').replace('月', '').replace('年', '').replace('最近','')) * base_time
+    current_time = int(time.time() * 1000)
+    start_time = current_time - windowSize
+    return base_url + 'kline/' + symbol + '?interval=' + interval + '&start_time=' + str(start_time) + '&end_time=' + str(current_time)
     
 async def request_binance(url):
     #对url中的?、=、\、&执行转义
