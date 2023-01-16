@@ -2,15 +2,8 @@
 Trading redefine.
 """
 import toga
-
-from toga.style.pack import CENTER, COLUMN, ROW, Pack, BOTTOM, TOP, LEFT, RIGHT
-#import httpx
 from tradingcontest.binanceAPI import *
 from tradingcontest.TradingAPI import *
-from collections import defaultdict
-import time
-import threading
-import asyncio
 
 class TradingContest(toga.App):
 

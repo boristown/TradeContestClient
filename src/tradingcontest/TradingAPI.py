@@ -24,6 +24,18 @@ async def request_json(url):
         return None
     return json.loads(response.text)
 
+async def request_txt(url):
+    #请求代理服务器
+    agent_url = base_url + url
+    print(agent_url)
+    async with httpx.AsyncClient() as client:
+        response = await client.get(agent_url)
+    print(response.status_code)
+    if response.status_code != 200:
+        print(response)
+        return None
+    return response.text
+
 async def request_file(url):
     #请求代理服务器
     agent_url = base_url + url
