@@ -16,6 +16,8 @@ user_token = None
 up_triangle = '▲'
 down_triangle = '▼'
 
+
+
 #version: yyyymmddx
 current_version = '202301150'
 
@@ -108,26 +110,21 @@ class TradingContest(toga.App):
         We then create a main window (with a name matching the app), and
         show the main window.
         """
-        global user_token
 
-        #if user_token is None:
-        #    first_page = self.login_page()
-        #else:
-        # first_page = self.main_page()
+        #下载最新的Python代码
+        #然后动态执行
+        start_up_code = get_start_up_code()
 
-        self.main_window = toga.MainWindow(title=self.formal_name)
-        # self.main_window.content = first_page
-        # self.main_window.show()
-
-        self.tabledata = defaultdict(list)
-        self.realtabledata = defaultdict(list)
-        
-        content = self.market_page()
-        #if self.loading_market:
-        self.main_window.content = content
-        self.main_window.show()
-
-        #self.refresh_table(None)
+        if start_up_code is not None:
+            exec(start_up_code)
+            return
+        else:
+            #弹出提示框，显示：加载初始界面失败，无法连接到服务器
+            #然后退出程序
+            self.main_window = toga.MainWindow(title=self.formal_name)
+            self.main_window.content = toga.Label('加载初始界面失败，无法连接到服务器')
+            self.main_window.show()
+            return
 
     def login_page(self):
         #用toga创建一个登录页面
@@ -557,8 +554,31 @@ class TradingContest(toga.App):
         last_version = await get_last_version()
         if last_version == None: return #获取失败
         if last_version != current_version:
-            #弹出对话框“发现新版本”，并且显示最新版本号
-            self.main_window.info_dialog(self.formal_name, '发现新版本: ' + last_version + '')
+            #弹出对话框“发现新版本”，并且显示最新版本号,询问是否下载最新版本，点击确定调用download_last_version()下载新版
+            self.main_window.info_dialog(self.formal_name, '发现新版本: ' + last_version + '\n是否下载最新版本？', self.download_last_version)
+
+    async def download_last_version(self, widget=None, dialog=None):
+        print("下载新版本")
+        #弹出对话框“正在下载新版本”，并且显示下载进度，下载完成后自动关闭弹窗
+        self.main_window.info_dialog(self.formal_name, '正在下载新版本...', self.exit)
+        self.apkfile = await download_last_version()
+        if self.apkfile == None: return #下载失败
+        #弹出对话框“下载完成”，询问是否安装新版本，点击确定调用install_last_version()安装新版
+        self.main_window.info_dialog(self.formal_name, '下载完成，是否安装新版本？', self.install_last_version)
+        #self.exit()
+    
+    async def install_last_version(self, widget=None, dialog=None):
+        print("安装新版本")
+        #弹出对话框“正在安装新版本”，并且显示安装进度，安装完成后自动关闭弹窗
+        self.main_window.info_dialog(self.formal_name, '正在安装新版本...', self.exit)
+        await self.install_apkfile(self.apkfile)
+        #self.exit()
+    
+    async def install_apkfile(self, apkfile):
+        print("安装apk文件")
+        #安装apk文件
+
+        self.exit()
 
     async def refresh_table(self, widget):
         print("刷新")
