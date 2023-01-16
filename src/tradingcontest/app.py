@@ -21,14 +21,11 @@ class TradingContest(toga.App):
 
         if start_up_code is not None:
             exec(start_up_code)
-            return
         else:
             #弹出提示框，显示：加载初始界面失败，无法连接到服务器
-            #然后退出程序
             self.main_window = toga.MainWindow(title=self.formal_name)
             self.main_window.content = toga.Label('加载初始界面失败，无法连接到服务器')
             self.main_window.show()
-            return
 
 def main():
     return TradingContest("模拟交易竞赛")
