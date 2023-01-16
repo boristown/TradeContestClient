@@ -58,7 +58,7 @@ async def request_binance(url):
     print(agent_url)
     async with httpx.AsyncClient() as client:
         response = await client.get(agent_url)
-    print(response.status_code, response.text, response.headers, response.content)
+    print(response.status_code)
     if response.status_code != 200:
         return None
     return json.loads(json.loads(response.text))
