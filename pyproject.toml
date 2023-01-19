@@ -1,7 +1,7 @@
 [tool.briefcase]
 project_name = "Trading Contest"
 bundle = "com.ak-bot.tradingcontest"
-version = "0.0.1"
+version = "0.0.2"
 url = "https://www.github.com/boristown/TradingContest"
 license = "MIT license"
 author = 'ak-bot'
